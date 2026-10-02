@@ -1,18 +1,28 @@
 import { getStorageData, setStorageData, saveProfile, deleteProfile } from '../utils/storage.js';
 import { parseProxyHostString } from '../utils/proxy-manager.js';
+import {
+  resolveLanguage,
+  applyI18n,
+  t,
+  getProfileDisplayName
+} from '../utils/i18n.js';
 
 let state = {
   profiles: [],
   activeProfileId: 'direct',
   autoSwitchRules: [],
   defaultAutoProfileId: 'direct',
-  bypassList: []
+  bypassList: [],
+  language: 'auto'
 };
+
+let currentLang = 'en';
 
 // Initialize Options Page
 async function initOptions() {
   await loadState();
   setupNavigation();
+  setupLanguageSelector();
   setupProfileModal();
   setupRuleModal();
   setupBypassTab();
@@ -21,6 +31,14 @@ async function initOptions() {
 
 async function loadState() {
   state = await getStorageData();
+  currentLang = resolveLanguage(state.language || 'auto');
+  applyI18n(currentLang);
+
+  const langSelect = document.getElementById('select-language');
+  if (langSelect) {
+    langSelect.value = state.language || 'auto';
+  }
+
   renderProfilesGrid();
   renderRulesTable();
   renderDefaultAutoProfileSelect();
@@ -45,6 +63,25 @@ function setupNavigation() {
 }
 
 /**
+ * LANGUAGE SELECTOR
+ */
+function setupLanguageSelector() {
+  const langSelect = document.getElementById('select-language');
+  if (!langSelect) return;
+
+  langSelect.addEventListener('change', async () => {
+    const selected = langSelect.value;
+    state.language = selected;
+    await setStorageData({ language: selected });
+    currentLang = resolveLanguage(selected);
+    applyI18n(currentLang);
+    renderProfilesGrid();
+    renderRulesTable();
+    renderDefaultAutoProfileSelect();
+  });
+}
+
+/**
  * PROFILES MANAGEMENT
  */
 function renderProfilesGrid() {
@@ -55,21 +92,22 @@ function renderProfilesGrid() {
     const card = document.createElement('div');
     card.className = 'profile-card';
     const color = profile.color || '#3b82f6';
+    const displayName = getProfileDisplayName(profile, currentLang);
 
     let detailsHtml = '';
     if (profile.type === 'direct') {
-      detailsHtml = '<div>Прямой доступ к интернету без прокси</div>';
+      detailsHtml = `<div>${t('direct_desc', currentLang)}</div>`;
     } else if (profile.type === 'system') {
-      detailsHtml = '<div>Использование прокси-настроек операционной системы</div>';
+      detailsHtml = `<div>${t('system_desc', currentLang)}</div>`;
     } else if (profile.type === 'auto_switch') {
-      detailsHtml = '<div>Динамический выбор прокси на базе доменных правил</div>';
+      detailsHtml = `<div>${t('auto_switch_desc', currentLang)}</div>`;
     } else if (profile.type === 'pac') {
-      detailsHtml = `<div>PAC: ${escapeHtml(profile.pacUrl || 'Встроенный скрипт')}</div>`;
+      detailsHtml = `<div>PAC: ${escapeHtml(profile.pacUrl || t('pac_embedded', currentLang))}</div>`;
     } else if (profile.type === 'single') {
       detailsHtml = `
-        <div><strong>Сервер:</strong> ${escapeHtml(profile.host)}:${profile.port}</div>
-        <div><strong>Протокол:</strong> ${escapeHtml((profile.scheme || 'http').toUpperCase())}</div>
-        ${profile.username ? `<div><strong>Авторизация:</strong> ${escapeHtml(profile.username)}</div>` : ''}
+        <div><strong>${t('server_label', currentLang)}</strong> ${escapeHtml(profile.host)}:${profile.port}</div>
+        <div><strong>${t('protocol_label', currentLang)}</strong> ${escapeHtml((profile.scheme || 'http').toUpperCase())}</div>
+        ${profile.username ? `<div><strong>${t('auth_label', currentLang)}</strong> ${escapeHtml(profile.username)}</div>` : ''}
       `;
     }
 
@@ -77,7 +115,7 @@ function renderProfilesGrid() {
       <div class="profile-card-header">
         <div class="profile-title-box">
           <span class="color-dot" style="background-color: ${color}; color: ${color}; width: 12px; height: 12px; border-radius: 50%;"></span>
-          <h3>${escapeHtml(profile.name)}</h3>
+          <h3>${escapeHtml(displayName)}</h3>
         </div>
         <span class="badge">${escapeHtml(profile.type)}</span>
       </div>
@@ -85,11 +123,11 @@ function renderProfilesGrid() {
         ${detailsHtml}
       </div>
       <div class="profile-card-footer">
-        ${profile.isSystem ? '<span class="help-text">Встроенный профиль</span>' : `
-          <button class="btn-icon btn-edit-profile" data-id="${profile.id}" title="Редактировать">
+        ${profile.isSystem ? `<span class="help-text">${t('system_profile_badge', currentLang)}</span>` : `
+          <button class="btn-icon btn-edit-profile" data-id="${profile.id}" title="${t('btn_edit', currentLang)}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
           </button>
-          <button class="btn-icon danger btn-delete-profile" data-id="${profile.id}" title="Удалить">
+          <button class="btn-icon danger btn-delete-profile" data-id="${profile.id}" title="${t('btn_delete', currentLang)}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         `}
@@ -111,7 +149,7 @@ function renderProfilesGrid() {
   container.querySelectorAll('.btn-delete-profile').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.dataset.id;
-      if (confirm('Вы уверены, что хотите удалить этот профиль?')) {
+      if (confirm(t('confirm_delete_profile', currentLang))) {
         await deleteProfile(id);
         await reloadBackend();
         await loadState();
@@ -185,7 +223,7 @@ function openProfileModal(profile = null) {
   const title = document.getElementById('modal-profile-title');
 
   if (profile) {
-    title.textContent = 'Редактировать профиль';
+    title.textContent = t('modal_edit_profile_title', currentLang);
     document.getElementById('profile-id').value = profile.id;
     document.getElementById('profile-name').value = profile.name;
     document.getElementById('profile-type').value = profile.type;
@@ -202,7 +240,7 @@ function openProfileModal(profile = null) {
       document.getElementById('profile-pac-data').value = profile.pacData || '';
     }
   } else {
-    title.textContent = 'Создать профиль';
+    title.textContent = t('modal_create_profile_title', currentLang);
     document.getElementById('form-profile').reset();
     document.getElementById('profile-id').value = '';
     document.getElementById('profile-color').value = getRandomColor();
@@ -223,14 +261,14 @@ function renderRulesTable() {
   tbody.innerHTML = '';
 
   if (!state.autoSwitchRules || state.autoSwitchRules.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="help-text text-center">Правила пока не добавлены</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="help-text text-center">${t('rules_empty', currentLang)}</td></tr>`;
     return;
   }
 
   state.autoSwitchRules.forEach(rule => {
     const tr = document.createElement('tr');
     const targetProfile = state.profiles.find(p => p.id === rule.profileId);
-    const profileName = targetProfile ? targetProfile.name : 'Неизвестный профиль';
+    const profileName = targetProfile ? getProfileDisplayName(targetProfile, currentLang) : t('unknown_profile', currentLang);
 
     tr.innerHTML = `
       <td>
@@ -239,7 +277,7 @@ function renderRulesTable() {
       <td><code>${escapeHtml(rule.pattern)}</code></td>
       <td><span class="badge" style="background:${targetProfile?.color || '#334155'}; color:#fff">${escapeHtml(profileName)}</span></td>
       <td class="text-right">
-        <button class="btn-icon danger btn-delete-rule" data-id="${rule.id}">
+        <button class="btn-icon danger btn-delete-rule" data-id="${rule.id}" title="${t('btn_delete', currentLang)}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
       </td>
@@ -278,7 +316,7 @@ function renderDefaultAutoProfileSelect() {
   state.profiles.filter(p => p.type !== 'auto_switch').forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = p.name;
+    opt.textContent = getProfileDisplayName(p, currentLang);
     if (p.id === state.defaultAutoProfileId) opt.selected = true;
     select.appendChild(opt);
   });
@@ -301,7 +339,7 @@ function setupRuleModal() {
     state.profiles.filter(p => p.type !== 'auto_switch').forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = p.name;
+      opt.textContent = getProfileDisplayName(p, currentLang);
       profileSelect.appendChild(opt);
     });
     modal.classList.add('open');
@@ -347,7 +385,7 @@ function setupBypassTab() {
     state.bypassList = list;
     await setStorageData({ bypassList: list });
     await reloadBackend();
-    alert('Список исключений сохранён!');
+    alert(t('bypass_saved_alert', currentLang));
   });
 }
 
@@ -382,12 +420,12 @@ function setupBackupTab() {
           await setStorageData(importedData);
           await reloadBackend();
           await loadState();
-          alert('Настройки успешно импортированы!');
+          alert(t('import_success_alert', currentLang));
         } else {
-          alert('Некорректный формат файла резервной копии.');
+          alert(t('import_invalid_format', currentLang));
         }
       } catch (err) {
-        alert('Ошибка при чтении файла JSON: ' + err.message);
+        alert(t('import_error', currentLang) + err.message);
       }
     };
     reader.readAsText(file);

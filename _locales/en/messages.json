@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "ProxySwitcher Pro",
+    "description": "Name of the Chrome Extension"
+  },
+  "extensionDesc": {
+    "message": "Fast proxy switching, HTTP, SOCKS4/5, PAC support, and auto-routing rules.",
+    "description": "Description of the Chrome Extension"
+  }
+}

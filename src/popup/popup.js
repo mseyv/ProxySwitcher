@@ -2,13 +2,25 @@
  * ProxySwitcher Popup Interface Controller
  */
 
+import {
+  resolveLanguage,
+  applyI18n,
+  t,
+  getProfileDisplayName,
+  getProfileDetailText
+} from '../utils/i18n.js';
+
 let currentDomainName = '';
+let currentLang = 'en';
 
 async function initPopup() {
   const statusRes = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
   if (!statusRes || !statusRes.success) return;
 
-  const { profiles, activeProfileId } = statusRes.data;
+  const { profiles, activeProfileId, language } = statusRes.data;
+
+  currentLang = resolveLanguage(language || 'auto');
+  applyI18n(currentLang);
 
   renderProfiles(profiles, activeProfileId);
   setupQuickRuleSelector(profiles);
@@ -25,20 +37,15 @@ function renderProfiles(profiles, activeProfileId) {
     item.className = `profile-item ${profile.id === activeProfileId ? 'active' : ''}`;
     item.dataset.id = profile.id;
 
-    let detailText = '';
-    if (profile.type === 'direct') detailText = 'Без прокси';
-    else if (profile.type === 'system') detailText = 'Настройки ОС';
-    else if (profile.type === 'auto_switch') detailText = 'Авто по правилам';
-    else if (profile.type === 'pac') detailText = 'PAC Скрипт';
-    else if (profile.type === 'single') detailText = `${profile.host}:${profile.port}`;
-
+    const displayName = getProfileDisplayName(profile, currentLang);
+    const detailText = getProfileDetailText(profile, currentLang);
     const color = profile.color || '#3b82f6';
 
     item.innerHTML = `
       <div class="profile-left">
         <span class="color-dot" style="background-color: ${color}; color: ${color};"></span>
         <div>
-          <div class="profile-title">${escapeHtml(profile.name)}</div>
+          <div class="profile-title">${escapeHtml(displayName)}</div>
           <div class="profile-detail">${escapeHtml(detailText)}</div>
         </div>
       </div>
@@ -59,7 +66,7 @@ function setupQuickRuleSelector(profiles) {
   validProfiles.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = p.name;
+    opt.textContent = getProfileDisplayName(p, currentLang);
     select.appendChild(opt);
   });
 }
@@ -79,7 +86,7 @@ async function loadCurrentDomain() {
   } catch (e) {
     console.warn('Could not read current tab URL:', e);
   }
-  domainEl.textContent = 'Локальная вкладка / Служебная';
+  domainEl.textContent = t('local_tab', currentLang);
   document.getElementById('btn-add-rule').disabled = true;
 }
 
@@ -106,13 +113,16 @@ async function addQuickRule() {
   });
 
   if (res && res.success) {
+    const btnText = document.getElementById('btn-add-rule-text');
+    const origText = btnText.textContent;
+    btnText.textContent = t('btn_add_rule_added', currentLang);
     const btn = document.getElementById('btn-add-rule');
-    const origText = btn.innerHTML;
-    btn.textContent = 'Добавлено!';
+    const origBg = btn.style.background;
     btn.style.background = '#10b981';
+
     setTimeout(() => {
-      btn.innerHTML = origText;
-      btn.style.background = '';
+      btnText.textContent = origText;
+      btn.style.background = origBg;
       initPopup(); // Refresh list
     }, 1200);
   }

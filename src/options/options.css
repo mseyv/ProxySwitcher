@@ -113,10 +113,24 @@ body {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+.sidebar-lang {
+  margin-top: auto;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-lang label {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
 .sidebar-footer {
   font-size: 11px;
   color: var(--accent-emerald);
-  padding-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-color);
 }
 

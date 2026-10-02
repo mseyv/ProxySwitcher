@@ -38,7 +38,8 @@ export const DEFAULT_STORAGE_DATA = {
   activeProfileId: 'direct',
   autoSwitchRules: [],
   defaultAutoProfileId: 'direct',
-  bypassList: DEFAULT_BYPASS_LIST
+  bypassList: DEFAULT_BYPASS_LIST,
+  language: 'auto'
 };
 
 export async function getStorageData() {
@@ -48,7 +49,8 @@ export async function getStorageData() {
     activeProfileId: result.activeProfileId || 'direct',
     autoSwitchRules: result.autoSwitchRules || [],
     defaultAutoProfileId: result.defaultAutoProfileId || 'direct',
-    bypassList: result.bypassList || DEFAULT_BYPASS_LIST
+    bypassList: result.bypassList || DEFAULT_BYPASS_LIST,
+    language: result.language || 'auto'
   };
 }
 

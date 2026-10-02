@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "ProxySwitcher Pro",
+    "description": "Название расширения Chrome"
+  },
+  "extensionDesc": {
+    "message": "Быстрое переключение прокси-серверов, поддержка HTTP, SOCKS4/5, PAC и авто-правил.",
+    "description": "Описание расширения Chrome"
+  }
+}
