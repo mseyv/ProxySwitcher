@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProxySwitcher Pro — Настройки</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            <path d="M2 12h20"></path>
+          </svg>
+        </div>
+        <div class="sidebar-title">
+          <h2>ProxySwitcher</h2>
+          <span>Панель управления</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="profiles">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Профили прокси
+        </button>
+        <button class="nav-item" data-tab="rules">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="10" y1="14" x2="21" y2="3"></line><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+          Авто-переключение
+        </button>
+        <button class="nav-item" data-tab="bypass">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Исключения (Bypass)
+        </button>
+        <button class="nav-item" data-tab="backup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Импорт и Экспорт
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-indicator">● Chrome Manifest V3</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- TAB 1: PROFILES -->
+      <section id="tab-profiles" class="tab-page active">
+        <div class="page-header">
+          <div>
+            <h1>Профили подключений</h1>
+            <p class="subtitle">Управление серверами прокси, протоколами и учетными данными.</p>
+          </div>
+          <button id="btn-add-profile" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Добавить профиль
+          </button>
+        </div>
+
+        <div id="profiles-grid" class="profiles-grid">
+          <!-- Profiles rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 2: AUTO SWITCH RULES -->
+      <section id="tab-rules" class="tab-page">
+        <div class="page-header">
+          <div>
+            <h1>Правила авто-переключения</h1>
+            <p class="subtitle">Автоматический выбор прокси в зависимости от домена или URL.</p>
+          </div>
+          <button id="btn-add-rule" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Добавить правило
+          </button>
+        </div>
+
+        <div class="card-box margin-bottom">
+          <div class="form-row flex-align-center">
+            <label for="default-auto-profile">Профиль по умолчанию (для всех остальных сайтов):</label>
+            <select id="default-auto-profile" class="select-md"></select>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th width="40">Статус</th>
+                <th>Шаблон домена / URL</th>
+                <th>Целевой Профиль</th>
+                <th width="80" class="text-right">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="rules-table-body">
+              <!-- Rules rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: BYPASS LIST -->
+      <section id="tab-bypass" class="tab-page">
+        <div class="page-header">
+          <div>
+            <h1>Список исключений (Bypass List)</h1>
+            <p class="subtitle">Укажите хосты и IP, к которым необходимо подключаться напрямую в обход прокси.</p>
+          </div>
+        </div>
+
+        <div class="card-box">
+          <div class="form-group">
+            <label for="bypass-textarea">Список хостов (по одному на строку или через запятую):</label>
+            <textarea id="bypass-textarea" rows="10" placeholder="<local>&#10;127.0.0.1&#10;localhost&#10;*.internal.company.com"></textarea>
+            <span class="help-text">Пример: &lt;local&gt;, 127.0.0.1, localhost, *.domain.com</span>
+          </div>
+          <div class="form-actions">
+            <button id="btn-save-bypass" class="btn-primary">Сохранить изменения</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: BACKUP -->
+      <section id="tab-backup" class="tab-page">
+        <div class="page-header">
+          <div>
+            <h1>Импорт и экспорт настроек</h1>
+            <p class="subtitle">Сохранение резервной копии профилей и правил или их восстановление.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="card-box">
+            <h2>Экспорт конфигурации</h2>
+            <p class="card-desc">Скачать полный файл настроек в формате JSON.</p>
+            <button id="btn-export-json" class="btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Скачать JSON
+            </button>
+          </div>
+
+          <div class="card-box">
+            <h2>Импорт конфигурации</h2>
+            <p class="card-desc">Восстановить настройки из файла JSON.</p>
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            <button id="btn-trigger-import" class="btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Загрузить JSON
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: ADD/EDIT PROFILE -->
+  <div id="modal-profile" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-profile-title">Создать профиль</h2>
+        <button class="modal-close" data-close="modal-profile">&times;</button>
+      </div>
+      <form id="form-profile" class="modal-body">
+        <input type="hidden" id="profile-id">
+
+        <div class="form-group">
+          <label for="profile-name">Название профиля:</label>
+          <input type="text" id="profile-name" required placeholder="например: Work Proxy / USA SOCKS5">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="profile-type">Тип подключения:</label>
+            <select id="profile-type" class="select-md">
+              <option value="single">Сервер прокси (HTTP / HTTPS / SOCKS)</option>
+              <option value="pac">PAC Скрипт</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="profile-color">Цвет метки:</label>
+            <input type="color" id="profile-color" value="#3b82f6" class="color-picker">
+          </div>
+        </div>
+
+        <!-- Single Proxy Fields -->
+        <div id="section-single-proxy" class="form-section">
+          <div class="form-row">
+            <div class="form-group" style="width: 140px;">
+              <label for="profile-scheme">Протокол:</label>
+              <select id="profile-scheme" class="select-md">
+                <option value="http">HTTP</option>
+                <option value="https">HTTPS</option>
+                <option value="socks5">SOCKS5</option>
+                <option value="socks4">SOCKS4</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="profile-host">Хост / IP адрес:</label>
+              <input type="text" id="profile-host" placeholder="192.168.1.100 или proxy.example.com">
+            </div>
+            <div class="form-group" style="width: 100px;">
+              <label for="profile-port">Порт:</label>
+              <input type="number" id="profile-port" placeholder="8080">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="profile-username">Логин (опционально):</label>
+              <input type="text" id="profile-username" placeholder="Username">
+            </div>
+            <div class="form-group flex-1">
+              <label for="profile-password">Пароль (опционально):</label>
+              <input type="password" id="profile-password" placeholder="Password">
+            </div>
+          </div>
+          <span class="help-text" style="color: #f59e0b; margin-top: 4px;">
+            ⚠️ <strong>Примечание Chromium:</strong> Браузер Chrome на сетевом уровне поддерживает логин/пароль только для HTTP/HTTPS прокси. Если у вас SOCKS5 с логином/паролем, выберите протокол HTTP (или запустите локальный прокси-мост).
+          </span>
+        </div>
+
+        <!-- PAC Script Fields -->
+        <div id="section-pac-script" class="form-section hidden">
+          <div class="form-group">
+            <label for="profile-pac-url">URL PAC скрипта:</label>
+            <input type="url" id="profile-pac-url" placeholder="https://example.com/proxy.pac">
+          </div>
+          <div class="form-group">
+            <label for="profile-pac-data">Или текст PAC скрипта:</label>
+            <textarea id="profile-pac-data" rows="4" placeholder="function FindProxyForURL(url, host) { return 'DIRECT'; }"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-profile">Отмена</button>
+          <button type="submit" class="btn-primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD/EDIT RULE -->
+  <div id="modal-rule" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-rule-title">Добавить правило авто-переключения</h2>
+        <button class="modal-close" data-close="modal-rule">&times;</button>
+      </div>
+      <form id="form-rule" class="modal-body">
+        <input type="hidden" id="rule-id">
+
+        <div class="form-group">
+          <label for="rule-pattern">Шаблон домена или URL (поддерживаются * и ?):</label>
+          <input type="text" id="rule-pattern" required placeholder="например: *.google.com, *.youtube.com или internal-site.ru">
+          <span class="help-text">Маска *.google.com перенаправит все поддомены google.com</span>
+        </div>
+
+        <div class="form-group">
+          <label for="rule-profile">Использовать профиль:</label>
+          <select id="rule-profile" class="select-md" required></select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-rule">Отмена</button>
+          <button type="submit" class="btn-primary">Сохранить правило</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

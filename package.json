@@ -1,0 +1,19 @@
+{
+  "name": "chrome-proxy-switcher",
+  "version": "1.0.0",
+  "description": "Powerful Manifest V3 Proxy Switcher Chrome Extension with auto-switch rules and modern UI",
+  "type": "module",
+  "scripts": {
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "keywords": [
+    "chrome-extension",
+    "proxy",
+    "socks5",
+    "http-proxy",
+    "pac",
+    "proxy-switcher"
+  ],
+  "author": "",
+  "license": "MIT"
+}
